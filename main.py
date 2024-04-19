@@ -1,32 +1,9 @@
-# Example file showing a circle moving on screen
+# main.py
 import pygame
+from constants import *
+from grid import place_ships, draw_grid
+from events import handle_click
 
-
-def draw_grid():
-    grid_size = 40  # size of the grid cells
-    num_cells = 10  # number of cells in each direction
-    size = num_cells * grid_size
-
-    # Calculate the starting point to center the grid
-    start_x = (screen.get_width() - size) // 2
-    start_y = (screen.get_height() - size) // 2
-
-    # Draw the vertical lines
-    for x in range(num_cells + 1):
-        pygame.draw.line(screen, "white", (start_x + x * grid_size, start_y), (start_x + x * grid_size, start_y + size))
-
-    # Draw the horizontal lines
-    for y in range(num_cells + 1):
-        pygame.draw.line(screen, "white", (start_x, start_y + y * grid_size), (start_x + size, start_y + y * grid_size))
-    
-    font = pygame.font.Font(None, 24)  # Choose the font for the letters and numbers
-    for i in range(num_cells):
-        letter = chr(65 + i)  # Convert number to ASCII character, starting from 'A'
-        number = str(i + 1)  # Convert number to string, starting from '1'
-        letter_surface = font.render(letter, True, "white")
-        number_surface = font.render(number, True, "white")
-        screen.blit(letter_surface, (start_x + i * grid_size + 12, start_y - grid_size // 2 - 5))
-        screen.blit(number_surface, (start_x - grid_size // 2 - 5, start_y + i * grid_size + 12))
 
 # pygame setup
 pygame.init()
@@ -35,19 +12,32 @@ clock = pygame.time.Clock()
 running = True
 dt = 0
 
-player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+# Initialize the grid
+grid = [[EMPTY for x in range(NUM_CELLS)] for y in range(NUM_CELLS)]
+ships_sunk = 0
 
+place_ships(grid)
+
+# game loop
 while running:
     # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            ships_sunk = handle_click(grid,ships_sunk,pygame,screen)
+            
+    # Check if all ships have been sunk
+    if ships_sunk == 5:
+        print("All ships have been sunk!")
+        running = False  # End the game
+
 
     # fill the screen with a color to wipe away anything from last frame
-    screen.fill("darkblue")
+    screen.fill("black")
 
-    draw_grid()
+    draw_grid(grid,pygame,screen)
 
     # flip() the display to put your work on screen
     pygame.display.flip()
