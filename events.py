@@ -2,11 +2,11 @@
 from constants import EMPTY, GRID_SIZE, HIT, MISS, NUM_CELLS, DEBUG, OUTSIDE_GRID, SHIP, SIZE
 
 
-def cell_clicked(pygame,screen):
+def cell_clicked(pygame,screen, offset: float):
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
     # Calculate the starting point to center the grid
-    start_x = (screen.get_width() - SIZE) // 2
+    start_x = int((screen.get_width() - SIZE * offset) // 2)
     start_y = (screen.get_height() - SIZE) // 2
 
     # Calculate the cell coordinates
@@ -24,8 +24,8 @@ def cell_clicked(pygame,screen):
         return OUTSIDE_GRID
     
 
-def handle_click(grid, ships_sunk, pygame, screen):
-    cell_x, cell_y = cell_clicked(pygame, screen)
+def handle_click(grid, ships_sunk, pygame, screen, offset: float):
+    cell_x, cell_y = cell_clicked(pygame, screen, offset)
 
     # check if the cell is already hit
     if (cell_x, cell_y) == OUTSIDE_GRID:
