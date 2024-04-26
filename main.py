@@ -1,7 +1,7 @@
 # main.py
 import pygame
 from constants import *
-from grid import place_ships, draw_grid
+from grid import Grid
 from events import handle_click
 
 
@@ -13,10 +13,10 @@ running = True
 dt = 0
 
 # Initialize the grid
-grid = [[EMPTY for x in range(NUM_CELLS)] for y in range(NUM_CELLS)]
+personalGrid = Grid()
 ships_sunk = 0
 
-place_ships(grid)
+personalGrid.place_ships()
 
 # game loop
 while running:
@@ -26,7 +26,7 @@ while running:
             running = False
         
         if event.type == pygame.MOUSEBUTTONDOWN:
-            ships_sunk = handle_click(grid,ships_sunk,pygame,screen)
+            ships_sunk = handle_click(personalGrid.grid,ships_sunk,pygame,screen)
             
     # Check if all ships have been sunk
     if ships_sunk == 5:
@@ -37,7 +37,7 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("black")
 
-    draw_grid(grid,pygame,screen)
+    personalGrid.draw(pygame,screen)
 
     # flip() the display to put your work on screen
     pygame.display.flip()
