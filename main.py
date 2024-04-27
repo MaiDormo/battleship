@@ -1,63 +1,61 @@
 # main.py
 import pygame
 from constants import *
-from grid import Grid
 from events import handle_click
+from player import Player
 
+def game_logic(opponent, pygame, screen, offset):
+    valid_click, health_lost = handle_click(opponent.grid.grid, pygame, screen, offset)
+    if valid_click:
+        opponent.total_health -= health_lost
+        return True
+    return False
 
-# pygame setup
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
-running = True
-dt = 0
+def switch_player(current_player):
+    return 1 if current_player == 0 else 0
 
-# Initialize the grid
-playerOneGrid = Grid(pygame, screen)
-playerTwoGrid = Grid(pygame, screen)
-shipsSunkPlayerOne = 0
-shipsSunkPlayerTwo = 0
+def update_game_state(players, current_player, pygame, screen, offset):
+    if game_logic(players[switch_player(current_player)], pygame, screen, offset):
+        current_player = switch_player(current_player)
+    return current_player
 
-offsetPlayerOne = 2.5
-offsetPlayerTwo = 0.1
-
-playerOneGrid.place_ships()
-playerTwoGrid.place_ships()
-
-# game loop
-while running:
-    # poll for events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            shipsSunkPlayerOne = handle_click(playerOneGrid.grid,shipsSunkPlayerOne,pygame,screen,offsetPlayerOne)
-            shipsSunkPlayerTwo = handle_click(playerTwoGrid.grid,shipsSunkPlayerTwo,pygame,screen,offsetPlayerTwo)
-            
-    # Check if all ships have been sunk
-    if shipsSunkPlayerOne == 5:
-        print("Player Two won!!")
-        running = False  # End the game
-    if shipsSunkPlayerTwo == 5:
-        print("Player One won!!")
-        running = False  # End the game
-
-
-    # fill the screen with a color to wipe away anything from last frame
+def draw(players, screen):
     screen.fill("black")
-
-    playerOneGrid.draw(offsetPlayerOne)
-    playerTwoGrid.draw(offsetPlayerTwo)
-
-    # flip() the display to put your work on screen
+    players[0].draw()
+    players[1].draw()
     pygame.display.flip()
 
-    # limits FPS to 60
-    # dt is delta time in seconds since last frame, used for framerate-
-    # independent physics.
-    dt = clock.tick(60) / 1000
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode(SCREEN_SIZE)
+    clock = pygame.time.Clock()
+    running = True
 
-pygame.quit()
+    players = [
+        Player(pygame, screen, OFFSET_PLAYER_ONE),
+        Player(pygame, screen, OFFSET_PLAYER_TWO)
+    ]
 
+    players[0].place_ships()
+    players[1].place_ships()
 
+    current_player = 0
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                current_player = update_game_state(players, current_player, pygame, screen, OFFSET_PLAYER_TWO if current_player == 0 else OFFSET_PLAYER_ONE)
+
+        if players[0].total_health == 0 or players[1].total_health == 0:
+            print(f"Player {switch_player(current_player) + 1} won!!")
+            running = False
+
+        draw(players, screen)
+        clock.tick(FPS_LIMIT)
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
